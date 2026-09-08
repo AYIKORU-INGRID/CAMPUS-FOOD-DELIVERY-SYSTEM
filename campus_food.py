@@ -278,7 +278,6 @@ def main_menu():
     load_orders_from_log()
     while True:
         print("\n--- Campus Food Ordering System ---")
-        print("0. View Menu")
         print("1. Place an Order")
         print("2. Simulate Order Delivery Flow")
         print("3. Update Order Status")
@@ -286,8 +285,7 @@ def main_menu():
         print("5. List All Orders")
         print("6. Exit")
         choice = input("Enter your choice: ")
-        if choice == '0':
-            display_menu()
+    
         if choice == '1':
             place_order()
         elif choice == '2':
