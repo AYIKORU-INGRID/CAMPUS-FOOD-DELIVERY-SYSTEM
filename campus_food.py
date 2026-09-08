@@ -34,13 +34,16 @@ def display_menu():
             availability = "Available" if details["available"] else "Not Available"
             print(f"  - {item}: UGX {details['price']} ({availability})")
     print("----------------------------------")
+
 # Ordering system that allows users to select items from the menu, specify quantities, and calculate the total cost of their order. 
 # The system should also check for item availability and handle cases where an item is not available.
 # The system should apply a delivery fee that depends pn the order's total value or distnce band using conditional logic.
+
 def place_order():
     order = {}
-    total_cost = 0
-    delivery_fee = 0
+    order_items = []
+    subtotal = 0
+    customer_name = input("Enter customer name: ").strip() or "Walk-in Customer"
 
     while True:
         display_menu()
@@ -60,51 +63,65 @@ def place_order():
             print(f"Sorry, {item} is currently not available.")
             continue
 
-        quantity = int(input(f"Enter the quantity of {item} you want to order: "))
-        item_cost = MENU[category][item]["price"] * quantity
-        total_cost += item_cost
-        order[item] = {"quantity": quantity, "cost": item_cost}
+        quantity_raw = input(f"Enter the quantity of {item} you want to order: ").strip()
+        if not quantity_raw.isdigit() or int(quantity_raw) <= 0:
+            print("Invalid quantity. Please enter a positive integer.")
+            continue
+        quantity = int(quantity_raw)
 
-    if total_cost > 0:
-        # Apply delivery fee based on total cost
-        if total_cost < 10000:
+        item_cost = MENU[category][item]["price"] * quantity
+        subtotal += item_cost
+        order_items.append({"name": item, "quantity": quantity})
+        order[item] = {"quantity": quantity, "cost": item_cost}
+        print(f"Added {quantity} x {item} = UGX {item_cost}")
+
+    if not order_items:
+        print("No items were ordered.")
+        return
+
+    if subtotal > 0:
+        if subtotal < 10000:
             delivery_fee = 2000
-        elif total_cost < 20000:
+        elif subtotal < 20000:
             delivery_fee = 1500
         else:
             delivery_fee = 1000
 
-        total_cost += delivery_fee
+        total = subtotal + delivery_fee
         print("\nOrder Summary:")
         for item, details in order.items():
             print(f"{item}: Quantity: {details['quantity']}, Cost: UGX {details['cost']}")
         print(f"Delivery Fee: UGX {delivery_fee}")
-        print(f"Total Cost: UGX {total_cost}")
+        print(f"Total Cost: UGX {total}")
 
-        log_order(order, total_cost)
+        new_order = {
+            "order_id": next_order_id,
+            "customer_name": customer_name,
+            "items": order_items,
+            "subtotal": subtotal,
+            "delivery_fee": delivery_fee,
+            "total": total,
+            "status": "Pending",
+            "rider": None,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        orders.append(new_order)
+        save_orders_to_log(new_order)
+        print(f"Order #{next_order_id} placed successfully.")
+        next_order_id += 1
     else:
         print("No items were ordered.")
 
+
 def log_order(order, total_cost):
-    with open(LOG_FILE, "a") as log_file:
-        log_file.write(f"Order placed on {datetime.now()}:\n")
-        for item, details in order.items():
-            log_file.write(f"{item}: Quantity: {details['quantity']}, Cost: UGX {details['cost']}\n")
-        log_file.write(f"Total Cost: UGX {total_cost}\n")
-        log_file.write("-" * 40 + "\n")
-order = {
-    "order_id": next_order_id,
-    "items": {},
-    "status": "Pending",
-    "rider": None,
-    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-}
+    print("Order logged for record keeping.")
 
 # The system should assign each completed order to an available rider chosen from a list.
 # Allows an order's status to be tracked (e.g., pending, in progress, delivered) and updated as the order progresses through the delivery process.
 # Prevents the orders from skipping any of the delivery stages and ensures that the order status is updated in the correct sequence.
 RIDERS = ["KATO", "MUTYABA", "OKELLO", "NANYONJO", "MERCY"]
 rider_busy_status = {rider: False for rider in RIDERS}
+STATUS_STAGES = ["Pending", "In Progress", "Delivered"]
 
 
 def assign_rider():
@@ -115,18 +132,53 @@ def assign_rider():
     return None
 
 
-def update_order_status(order_id, status):
-    with open(LOG_FILE, "a") as log_file:
-        log_file.write(f"Order ID: {order_id} Status Updated to: {status} on {datetime.now()}\n")
-        log_file.write("-" * 40 + "\n")
+def update_order_status(order_id=None, status=None):
+    if not orders:
+        print("There are no orders yet.")
+        return
+
+    if order_id is None:
+        raw_id = input("Enter order number to update: ").strip()
+        if not raw_id.isdigit():
+            print("Please enter a valid order number.")
+            return
+        order_id = int(raw_id)
+
+    order = next((entry for entry in orders if entry["order_id"] == order_id), None)
+    if order is None:
+        print(f"No order found with number {order_id}.")
+        return
+
+    current_index = STATUS_STAGES.index(order["status"])
+    if current_index == len(STATUS_STAGES) - 1:
+        print(f"Order #{order['order_id']} is already 'Delivered'.")
+        return
+
+    next_stage = STATUS_STAGES[current_index + 1]
+
+    if next_stage == "In Progress":
+        rider = assign_rider()
+        if rider is None:
+            print("No available riders at the moment. Please wait.")
+            return
+        order["rider"] = rider
+        print(f"Rider {rider} has been assigned to order #{order['order_id']}.")
+
+    if next_stage == "Delivered":
+        if order.get("rider"):
+            rider_busy_status[order["rider"]] = False
+        order["rider"] = order.get("rider")
+
+    order["status"] = next_stage
+    order["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    save_orders_to_log(order)
+    print(f"Order #{order['order_id']} status updated to {next_stage}.")
 
 
 def find_order_by_id(order_id):
-    with open(LOG_FILE, "r") as log_file:
-        lines = log_file.readlines()
-        for i in range(len(lines)):
-            if f"Order ID: {order_id}" in lines[i]:
-                return lines[i:i+5]  # Return the order details and status updates
+    for order in orders:
+        if order["order_id"] == order_id:
+            return order
     return None
 
 
@@ -134,7 +186,7 @@ next_status = ["Pending", "In Progress", "Delivered"]
 
 
 # The rider is assigned at the point of order placement, and the order status is updated as the order progresses through the delivery process.
-def simulate_order_delivery_flow():
+def simulate_order_delivery_flow(order):
     if order["status"] == "Pending":
         rider = assign_rider()
         if rider is None:
@@ -147,7 +199,8 @@ def simulate_order_delivery_flow():
         print(f"Order #{order['order_id']} status updated to {order['status']}.")
 
     elif order["status"] == "In Progress":
-        rider_busy_status[order["rider"]] = False
+        if order.get("rider"):
+            rider_busy_status[order["rider"]] = False
         order["status"] = "Delivered"
         print(f"Rider {order['rider']} is now available for new orders.")
         print(f"Order #{order['order_id']} status updated to {order['status']}.")
@@ -251,7 +304,7 @@ def load_orders_from_log():
  
     if loaded_count:
         print(f"Loaded {loaded_count} previously completed order(s) from {LOG_FILE}.")
-def save_orders_to_log():
+def save_orders_to_log(order):
     items_summary = "; ".join(
         f"{it['name']} x{it['quantity']}" for it in order["items"]
     )
@@ -289,7 +342,10 @@ def main_menu():
         if choice == '1':
             place_order()
         elif choice == '2':
-            simulate_order_delivery_flow()
+            if not orders:
+                print("\nNo orders have been placed yet.")
+            else:
+                simulate_order_delivery_flow(orders[-1])
         elif choice == '3':
             update_order_status()
         elif choice == '4':
@@ -297,10 +353,8 @@ def main_menu():
         elif choice == '5':
             list_all_orders()
         elif choice == '6':
-            save_orders_to_log()
             print("THANK YOU FOR USING THE CAMPUS FOOD ORDERING SYSTEM. Goodbye!")
             break
-        
 
 
 if __name__ == "__main__":
