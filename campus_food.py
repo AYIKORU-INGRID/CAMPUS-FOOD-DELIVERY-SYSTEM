@@ -43,6 +43,7 @@ def place_order():
     order = {}
     order_items = []
     subtotal = 0
+    global next_order_id   
     customer_name = input("Enter customer name: ").strip() or "Walk-in Customer"
 
     while True:
