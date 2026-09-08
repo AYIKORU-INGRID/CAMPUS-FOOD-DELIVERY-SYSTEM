@@ -302,8 +302,7 @@ def main_menu():
             save_orders_to_log()
             print("THANK YOU FOR USING THE CAMPUS FOOD ORDERING SYSTEM. Goodbye!")
             break
-        else:
-            print("Invalid choice. Please try again.")
+        
 
 
 if __name__ == "__main__":
