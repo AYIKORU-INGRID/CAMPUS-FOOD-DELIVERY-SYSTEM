@@ -45,7 +45,7 @@ def place_order():
     subtotal = 0
     global next_order_id   
     customer_name = input("Enter customer name: ").strip() or "Walk-in Customer"
-# The system should ask users to know if it is a dine-in ordrer or a delivery order and apply the appropriate delivery fee if applicable.
+# The system should ask users to know if it is a dine-in order or a delivery order and apply the appropriate delivery fee if applicable.
     order_type = ""
     while order_type not in ["dine-in", "delivery"]:
         order_type = input("Is this a Dine-in or Delivery order? (Dine-in/Delivery): ").strip().lower()
@@ -127,7 +127,7 @@ def log_order(order, total_cost):
 # Prevents the orders from skipping any of the delivery stages and ensures that the order status is updated in the correct sequence.
 RIDERS = ["KATO", "MUTYABA", "OKELLO", "NANYONJO", "MERCY"]
 rider_busy_status = {rider: False for rider in RIDERS}
-STATUS_STAGES = ["Pending", "In Progress", "Delivered"]
+STATUS_STAGES = ["Pending", "Out for Delivery", "Delivered"]
 # WRITTEN BY: DERRICK
 
 def assign_rider():
@@ -162,7 +162,7 @@ def update_order_status(order_id=None, status=None):
 
     next_stage = STATUS_STAGES[current_index + 1]
 
-    if next_stage == "In Progress":
+    if next_stage == "Out for Delivery":
         rider = assign_rider()
         if rider is None:
             print("No available riders at the moment. Please wait.")
@@ -188,7 +188,7 @@ def find_order_by_id(order_id):
     return None
 
 
-next_status = ["Pending", "In Progress", "Delivered"]
+next_status = ["Pending", "Out for Delivery", "Delivered"]
 
 
 # The rider is assigned at the point of order placement, and the order status is updated as the order progresses through the delivery process.
@@ -200,11 +200,11 @@ def simulate_order_delivery_flow(order):
             return
 
         order["rider"] = rider
-        order["status"] = "In Progress"
+        order["status"] = "Out for Delivery"
         print(f"Rider {rider} has been assigned to order #{order['order_id']}.")
         print(f"Order #{order['order_id']} status updated to {order['status']}.")
 
-    elif order["status"] == "In Progress":
+    elif order["status"] == "Out for Delivery":
         if order.get("rider"):
             rider_busy_status[order["rider"]] = False
         order["status"] = "Delivered"
