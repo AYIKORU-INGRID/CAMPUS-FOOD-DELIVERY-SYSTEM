@@ -34,7 +34,7 @@ def display_menu():
             availability = "Available" if details["available"] else "Not Available"
             print(f"  - {item}: UGX {details['price']} ({availability})")
     print("----------------------------------")
-# WRITTEN BY Racheal & Edrina
+# WRITTEN BY Racheal & Edrina .
 # Ordering system that allows users to select items from the menu, specify quantities, and calculate the total cost of their order. 
 # The system should also check for item availability and handle cases where an item is not available.
 # The system should apply a delivery fee that depends pn the order's total value or distnce band using conditional logic.
