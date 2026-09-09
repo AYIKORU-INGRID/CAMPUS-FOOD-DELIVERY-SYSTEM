@@ -45,7 +45,12 @@ def place_order():
     subtotal = 0
     global next_order_id   
     customer_name = input("Enter customer name: ").strip() or "Walk-in Customer"
-
+# The system should ask users to know if it is a dine-in ordrer or a delivery order and apply the appropriate delivery fee if applicable.
+    order_type = ""
+    while order_type not in ["dine-in", "delivery"]:
+        order_type = input("Is this a Dine-in or Delivery order? (Dine-in/Delivery): ").strip().lower()
+        if order_type not in ["dine-in", "delivery"]:
+            print("Invalid input. Please enter 'Dine-in' or 'Delivery'.")
     while True:
         display_menu()
         category = input("Enter the category you want to order from (or type 'done' to finish): ").strip().upper()
