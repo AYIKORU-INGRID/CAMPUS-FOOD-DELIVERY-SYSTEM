@@ -217,7 +217,7 @@ def simulate_order_delivery_flow(order):
 def show_report():
     total_revenue = 0
     item_sales = {}
-    status_counts = {"Pending": 0, "In Progress": 0, "Delivered": 0}
+    status_counts = {"Pending": 0, "Out for Delivery": 0, "Delivered": 0}
     if not orders:
         print("\nNo orders have been placed yet.")
         return
