@@ -5,7 +5,7 @@ from datetime import datetime
 LOG_FILE = "campus_food_log.txt"
 orders = []
 next_order_id = 1 
-# (Written by Ingrid)
+
 MENU={
     "MEALS": {
         "Rice & Beans": {"price": 4000, "available": True},
@@ -34,7 +34,7 @@ def display_menu():
             availability = "Available" if details["available"] else "Not Available"
             print(f"  - {item}: UGX {details['price']} ({availability})")
     print("----------------------------------")
-# WRITTEN BY Racheal & Edrina .
+
 # Ordering system that allows users to select items from the menu, specify quantities, and calculate the total cost of their order. 
 # The system should also check for item availability and handle cases where an item is not available.
 # The system should apply a delivery fee that depends pn the order's total value or distnce band using conditional logic.
@@ -128,7 +128,7 @@ def log_order(order, total_cost):
 RIDERS = ["KATO", "MUTYABA", "OKELLO", "NANYONJO", "MERCY"]
 rider_busy_status = {rider: False for rider in RIDERS}
 STATUS_STAGES = ["Pending", "Out for Delivery", "Delivered"]
-# WRITTEN BY: DERRICK
+
 
 def assign_rider():
     for rider, busy in rider_busy_status.items():
@@ -211,7 +211,7 @@ def simulate_order_delivery_flow(order):
         print(f"Rider {order['rider']} is now available for new orders.")
         print(f"Order #{order['order_id']} status updated to {order['status']}.")
 
-# PRESENTED BY JOUY & DOUGLAS
+
 # The system should compute and display the day's total revenue, 
 # the best-selling item and the number of orders currently in each status category.
 def show_report():
@@ -258,7 +258,7 @@ def list_all_orders():
         rider_text = order["rider"] if order["rider"] else "Not yet assigned"
         print(f"#{order['order_id']:<3} {order['customer_name']:<20} "
               f"UGX {order['total']:>8,}  {order['status']:<16} Rider: {rider_text}")
-# WRITTEN BY: BARBARA & ADAM
+        
 # The system should save every order to a log file and reload the log automatically when the program starts
 #so that records arent lost between sessions. The log should include the order details, total cost, assigned rider, and timestamps for each stage of the order process.
 # Handle errors gracefully, such as invalid menu selections, unavailable items, or issues with file I/O operations.
@@ -332,7 +332,6 @@ def save_orders_to_log(order):
 
 # Asimple text-based user interface that allows users to navigate through the different functionalities of the system, such as placing orders, viewing reports, and exiting the program.
 
-# WRITTEN BY : TREVOR
 def main_menu():
     load_orders_from_log()
     while True:
